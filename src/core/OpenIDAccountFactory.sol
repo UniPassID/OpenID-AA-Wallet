@@ -29,9 +29,19 @@ contract OpenIDAccountFactory {
     function createAccount(
         uint256 salt,
         address owner,
-        bytes32 openid_key
+        bytes32 openid_key,
+        bytes32[] memory audiences,
+        bytes32[] memory key_ids,
+        bytes[] memory keys
     ) public returns (OpenIDAccount) {
-        address addr = getAddress(salt, owner, openid_key);
+        address addr = getAddress(
+            salt,
+            owner,
+            openid_key,
+            audiences,
+            key_ids,
+            keys
+        );
         uint codeSize = addr.code.length;
         if (codeSize > 0) {
             return OpenIDAccount(payable(addr));
@@ -43,7 +53,7 @@ contract OpenIDAccountFactory {
                         address(accountImplementation),
                         abi.encodeCall(
                             OpenIDAccount.initialize,
-                            (owner, openid_key)
+                            (owner, openid_key, audiences, key_ids, keys)
                         )
                     )
                 )
@@ -56,7 +66,10 @@ contract OpenIDAccountFactory {
     function getAddress(
         uint256 salt,
         address owner,
-        bytes32 openid_key
+        bytes32 openid_key,
+        bytes32[] memory audiences,
+        bytes32[] memory key_ids,
+        bytes[] memory keys
     ) public view returns (address) {
         return
             Create2.computeAddress(
@@ -68,7 +81,7 @@ contract OpenIDAccountFactory {
                             address(accountImplementation),
                             abi.encodeCall(
                                 OpenIDAccount.initialize,
-                                (owner, openid_key)
+                                (owner, openid_key, audiences, key_ids, keys)
                             )
                         )
                     )

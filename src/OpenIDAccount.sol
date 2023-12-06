@@ -21,11 +21,25 @@ contract OpenIDAccount is SimpleAccount, OpenIDVerifier {
 
     function initialize(
         address owner,
-        bytes32 openid_key
+        bytes32 openid_key,
+        bytes32[] memory audiences,
+        bytes32[] memory key_ids,
+        bytes[] memory keys
     ) public virtual initializer {
+        require(key_ids.length == keys.length, "invalid key");
         super.initialize(owner);
         _openid_keys[openid_key] = true;
         emit OpenIDKeyAdded(openid_key);
+
+        for (uint i = 0; i < audiences.length; i++) {
+            openIDAudience[audiences[i]] = true;
+            emit AddOpenIDAudience(audiences[i]);
+        }
+
+        for (uint i = 0; i < key_ids.length; i++) {
+            openIDPublicKey[key_ids[i]] = keys[i];
+            emit UpdateOpenIDPublicKey(key_ids[i], keys[i]);
+        }
     }
 
     function addOpenIDKey(bytes32 openid_key) public onlyOwner {
