@@ -11,7 +11,7 @@ import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "@account-abstraction/contracts/interfaces/UserOperation.sol";
 
 import "./TokenERC20.sol";
-import "../src/core/OpenIDAccount.sol";
+import "../src/OpenIDAccount.sol";
 import "../src/core/OpenIDAccountFactory.sol";
 
 contract OpenIDAccountTest is Test {
