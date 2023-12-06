@@ -4,8 +4,8 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@account-abstraction/contracts/samples/SimpleAccount.sol";
 
-import "../libraries/LibBytes.sol";
-import "./OpenIDVerifier.sol";
+import "./libraries/LibBytes.sol";
+import "./core/OpenIDVerifier.sol";
 
 contract OpenIDAccount is SimpleAccount, OpenIDVerifier {
     event OpenIDKeyAdded(bytes32 openid_key);
