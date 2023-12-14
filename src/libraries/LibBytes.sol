@@ -326,4 +326,16 @@ library LibBytes {
         }
         revert SplitInvalidNeedle();
     }
+
+    function toNum(bytes calldata self) internal pure returns (uint) {
+        uint val = 0;
+        for (uint i = 0; i < self.length; i++) {
+            uint exp = self.length - i;
+            bytes1 ival = self[i];
+            uint8 uval = uint8(ival);
+            uint jval = uval - uint(0x30);
+            val += (uint(jval) * (10 ** (exp - 1)));
+        }
+        return val;
+    }
 }

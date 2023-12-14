@@ -3,6 +3,7 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/utils/Create2.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@account-abstraction/contracts/interfaces/IEntryPoint.sol";
 import "../OpenIDAccount.sol";
 
@@ -13,11 +14,13 @@ import "../OpenIDAccount.sol";
  * Cannot be a subclass since both constructor and createAccount depend on the
  * constructor and initializer of the actual account contract.
  */
-contract OpenIDAccountFactory {
-    OpenIDAccount public immutable accountImplementation;
+contract OpenIDAccountFactory is Ownable {
+    OpenIDAccount public immutable _accountImplementation;
+    IEntryPoint public immutable _entryPoint;
 
     constructor(IEntryPoint entryPoint) {
-        accountImplementation = new OpenIDAccount(entryPoint);
+        _entryPoint = entryPoint;
+        _accountImplementation = new OpenIDAccount(entryPoint);
     }
 
     /**
@@ -50,7 +53,7 @@ contract OpenIDAccountFactory {
             OpenIDAccount(
                 payable(
                     new ERC1967Proxy{salt: bytes32(salt)}(
-                        address(accountImplementation),
+                        address(_accountImplementation),
                         abi.encodeCall(
                             OpenIDAccount.initialize,
                             (owner, openid_key, audiences, key_ids, keys)
@@ -78,7 +81,7 @@ contract OpenIDAccountFactory {
                     abi.encodePacked(
                         type(ERC1967Proxy).creationCode,
                         abi.encode(
-                            address(accountImplementation),
+                            address(_accountImplementation),
                             abi.encodeCall(
                                 OpenIDAccount.initialize,
                                 (owner, openid_key, audiences, key_ids, keys)
@@ -87,5 +90,41 @@ contract OpenIDAccountFactory {
                     )
                 )
             );
+    }
+
+    /**
+     * Deposits ETH to the entry point on behalf of the contract
+     */
+    function deposit() public payable {
+        _entryPoint.depositTo{value: msg.value}(address(this));
+    }
+
+    /**
+     * Allows the owner to withdraw ETH from entrypoint contract
+     */
+    function withdrawTo(
+        address payable withdrawAddress,
+        uint256 amount
+    ) public onlyOwner {
+        _entryPoint.withdrawTo(withdrawAddress, amount);
+    }
+
+    /**
+     * Allows the owner to add stake to the entry point
+     */
+    function addStake(uint32 unstakeDelaySec) external payable onlyOwner {
+        _entryPoint.addStake{value: msg.value}(unstakeDelaySec);
+    }
+
+    /**
+     * Allows the owner to unlock their stake from the entry point
+     */
+    function unlockStake() external onlyOwner {
+        _entryPoint.unlockStake();
+    }
+
+
+    function withdrawStake(address payable withdrawAddress) external onlyOwner {
+        _entryPoint.withdrawStake(withdrawAddress);
     }
 }

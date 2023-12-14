@@ -60,17 +60,23 @@ contract OpenIDAccount is SimpleAccount, OpenIDVerifier {
     function _validateSignature(
         UserOperation calldata userOp,
         bytes32 userOpHash
-    ) internal virtual override returns (uint256) {
+    ) internal virtual override returns (uint256 validationData) {
         bytes memory data = abi.encodeWithSelector(
-            bytes4(keccak256("validateIDToken(uint256,bytes)")),
-            uint256(0),
+            bytes4(keccak256("validateIDToken(bytes)")),
             userOp.signature
         );
 
         (bool success, bytes memory res) = address(this).call(data);
         require(success);
-        (bool succ, , bytes32 issHash, bytes32 subHash, bytes32 nonceHash) = abi
-            .decode(res, (bool, uint256, bytes32, bytes32, bytes32));
+
+        bool succ;
+        bytes32 issHash;
+        bytes32 subHash;
+        bytes32 nonceHash;
+        (succ, validationData, issHash, subHash, nonceHash) = abi.decode(
+            res,
+            (bool, uint256, bytes32, bytes32, bytes32)
+        );
         require(succ, "INVALID_TOKEN");
         require(
             keccak256((LibBytes.toHex(uint256(userOpHash), 32))) == nonceHash,
@@ -80,7 +86,6 @@ contract OpenIDAccount is SimpleAccount, OpenIDVerifier {
             _openid_keys[keccak256(abi.encodePacked(issHash, subHash))],
             "INVALID_SUB"
         );
-        return 0;
     }
 
     function validateUserOp(
