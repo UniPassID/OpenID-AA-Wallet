@@ -24,6 +24,8 @@ signature of userOP is idtoken, istoken.nonce is userOpHash.
 
 ## updateOpenIDPublicKey
 
+owner can update a key with publicKey
+
 ```solidity
 function updateOpenIDPublicKey(
     bytes32 _key,
@@ -31,10 +33,16 @@ function updateOpenIDPublicKey(
 ) external onlyOwner
 ```
 
-owner can update a key with publicKey
+## OpenIDAudience
 
-## addOpenIDAudience
+owner can add or delete audiences
 
+### add
+```solidity
 addOpenIDAudience(bytes32 _key) external onlyOwner
+```
 
-oner can add audience
+## delete
+```solidity
+function deleteOpenIDAudience(bytes32 _key) external onlyOwner
+```
