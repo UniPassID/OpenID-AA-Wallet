@@ -1,5 +1,9 @@
 # OpenID-AA-Wallet
 
+## deployment 
+
+Use foundry to deploy the OpenIDAccountFactory contract, with the parameter being the address of the entrypoint contract.
+
 ## initialize
 
 ```solidity
